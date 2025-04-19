@@ -1,0 +1,23 @@
+{
+  "style": "One Drop",
+  "key": "C",
+  "bpm": 70,
+  "pattern": [
+    {
+      "instrument": "kick",
+      "beat": 1
+    },
+    {
+      "instrument": "snare",
+      "beat": 2
+    },
+    {
+      "instrument": "kick",
+      "beat": 3
+    },
+    {
+      "instrument": "snare",
+      "beat": 4
+    }
+  ]
+}
