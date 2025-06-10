@@ -1,9 +1,5 @@
-# Sample Makefile for dependency and test automation
-requirements.txt: pyproject.toml
-	poetry export -f requirements.txt --without-hashes > requirements.txt
-
-test:
-	pytest tests/
+install:
+	pip install -r requirements.txt
 
 format:
 	black src tests
@@ -12,3 +8,9 @@ format:
 lint:
 	flake8 src tests
 	mypy src
+
+test:
+	pytest
+
+export-requirements:
+	poetry export -f requirements.txt --without-hashes > requirements.txt

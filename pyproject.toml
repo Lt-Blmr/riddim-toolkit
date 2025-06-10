@@ -2,7 +2,7 @@
 name = "riddim-toolkit"
 version = "0.1.0"
 description = "MIDI generation system for reggae, rocksteady, and ska rhythm sections."
-authors = ["Your Name <your@email.com>"]
+authors = ["Your Name <your.email@example.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"

@@ -1,4 +1,7 @@
 mido
 numpy
-json
-random
+pytest
+black
+isort
+flake8
+mypy
