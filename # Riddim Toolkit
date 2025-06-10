@@ -1,0 +1,31 @@
+# Riddim Toolkit
+
+A MIDI groove‐generation toolkit focused on reggae, rocksteady, and ska.  
+
+## Installation
+
+```bash
+git clone https://github.com/you/riddim-toolkit.git
+cd riddim-toolkit
+pip install -r requirements.txt
+```
+
+## Usage
+
+```bash
+python performance_builder_gui.py
+```
+1. Select a MIDI output port.  
+2. Choose bank & patch for each part.  
+3. Click **Send to JV-1080**.  
+
+## Running Tests
+
+```bash
+pip install pytest
+pytest
+```
+
+## Groove Generator
+
+See `scripts/riddim_generator.py` for API usage and examples.

@@ -1,0 +1,28 @@
+import pytest
+import json
+import tempfile
+import os
+from performance_builder_gui import load_patch_db, PerformanceBuilderApp
+
+def test_load_patch_db_success(tmp_path):
+    data = {"A": {"Patch1": [0,1]}}
+    file = tmp_path / "db.json"
+    file.write_text(json.dumps(data))
+    assert load_patch_db(str(file)) == data
+
+def test_load_patch_db_not_found():
+    with pytest.raises(FileNotFoundError):
+        load_patch_db("nonexistent.json")
+
+def test_send_all_sysex_invalid(tmp_path, monkeypatch):
+    # prepare minimal GUI with fake patch_db
+    db = {"Bank": {"P": [0,1]}}
+    # monkeypatch load_patch_db
+    app = PerformanceBuilderApp.__new__(PerformanceBuilderApp)
+    app.patch_db = db
+    # simulate one part row with missing selections
+    class Row: pass
+    row = Row(); row.idx=0; row.bank_cb=type("c",(),{"get":lambda s:""}); row.patch_cb=row.bank_cb
+    app.part_rows=[row]
+    with pytest.raises(ValueError):
+        app.send_all_sysex("PortX")

@@ -1,0 +1,98 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import mido
+import json
+import os
+
+def load_patch_db(path):
+    """Load JV-1080 patch database from JSON file."""
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"Patch database not found: {path}")
+    with open(path, 'r') as f:
+        return json.load(f)
+
+class PerformanceBuilderApp(tk.Tk):
+    def __init__(self, patch_db_path='jv1080_patch_database.json'):
+        super().__init__()
+        self.title("Riddim Toolkit – JV-1080 Performance Builder")
+        self.geometry("800x600")
+        try:
+            self.patch_db = load_patch_db(patch_db_path)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            self.destroy()
+            return
+        self.create_widgets()
+        self.create_status_bar()
+
+    def create_widgets(self):
+        # Port selector
+        ttk.Label(self, text="MIDI Port:").grid(row=0, column=0, sticky="w")
+        self.port_cb = ttk.Combobox(self, values=mido.get_output_names())
+        self.port_cb.grid(row=0, column=1, sticky="ew")
+        # Placeholder for part rows
+        self.part_rows = []
+        for i in range(1, 9):
+            self.add_part_row(i)
+        send_btn = ttk.Button(self, text="Send to JV-1080", command=self.on_send)
+        send_btn.grid(row=18, column=0, columnspan=4, pady=10)
+
+    def create_status_bar(self):
+        self.status = tk.StringVar()
+        self.status.set("Ready")
+        label = ttk.Label(self, textvariable=self.status, relief="sunken", anchor="w")
+        label.grid(row=19, column=0, columnspan=4, sticky="ew")
+
+    def add_part_row(self, idx):
+        """Add a row of controls for a single part."""
+        row = ttk.Frame(self)
+        row.grid(row=idx, column=0, columnspan=4, sticky="ew")
+        # Bank and patch selectors
+        bank_cb = ttk.Combobox(row, values=list(self.patch_db.keys()))
+        bank_cb.grid(row=0, column=0, sticky="ew")
+        patch_cb = ttk.Combobox(row)
+        patch_cb.grid(row=0, column=1, sticky="ew")
+        # Save reference to part row controls
+        self.part_rows.append(PartRow(idx, bank_cb, patch_cb))
+
+    def on_send(self):
+        # Input validation
+        port_name = self.port_cb.get()
+        if not port_name:
+            return self._set_error("Select a MIDI port first.")
+        try:
+            self.send_all_sysex(port_name)
+            self._set_status("All patches sent successfully.")
+        except Exception as e:
+            self._set_error(f"Failed to send: {e}")
+
+    def send_all_sysex(self, port_name):
+        """Send program changes for all configured parts."""
+        outport = mido.open_output(port_name)
+        for part in self.part_rows:
+            bank = part.bank_cb.get()
+            patch = part.patch_cb.get()
+            if not bank or not patch:
+                raise ValueError(f"Part {part.idx+1}: bank and patch must be selected")
+            msb, lsb = self.patch_db[bank][patch]
+            msg = mido.Message('program_change', program=msb*128 + lsb)
+            outport.send(msg)
+        outport.close()
+
+    def _set_status(self, text):
+        self.status.set(text)
+
+    def _set_error(self, text):
+        self.status.set(text)
+        messagebox.showerror("Error", text)
+
+class PartRow:
+    """Represents a single row of part controls (bank/patch selectors) in the UI."""
+    def __init__(self, idx, bank_cb, patch_cb):
+        self.idx = idx
+        self.bank_cb = bank_cb
+        self.patch_cb = patch_cb
+
+if __name__ == "__main__":
+    app = PerformanceBuilderApp()
+    app.mainloop()
